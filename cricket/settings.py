@@ -125,5 +125,5 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'fantasy',   # 👈 add this
+    'fantasy',   
 ]

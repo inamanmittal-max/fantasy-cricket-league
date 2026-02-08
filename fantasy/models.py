@@ -1,6 +1,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 
 class Player(models.Model):
@@ -34,8 +35,33 @@ class AuctionBid(models.Model):
     player = models.OneToOneField(Player, on_delete=models.CASCADE)
     bid_amount = models.IntegerField()
 
+    def clean(self):
+        # Rule 1: Bid must be >= base price
+        if self.bid_amount < self.player.base_price:
+            raise ValidationError(
+                f"Bid must be at least {self.player.base_price}"
+            )
+
+        # Rule 2: Team must have enough budget
+        if self.bid_amount > self.fantasy_team.budget_remaining:
+            raise ValidationError(
+                "Insufficient budget for this bid"
+            )
+
+    def save(self, *args, **kwargs):
+        # Run validations
+        self.clean()
+
+        # Deduct budget only on first save
+        if not self.pk:
+            self.fantasy_team.budget_remaining -= self.bid_amount
+            self.fantasy_team.save()
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.fantasy_team.name} → {self.player.name}"
+
 
 
 class Match(models.Model):

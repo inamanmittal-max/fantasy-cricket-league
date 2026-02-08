@@ -1,5 +1,9 @@
+
 from django.apps import AppConfig
 
-
 class FantasyConfig(AppConfig):
-    name = "fantasy"
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'fantasy'
+
+    def ready(self):
+        import fantasy.signals
